@@ -8,9 +8,12 @@
   "dependencies": {
     "express": "3.5.1",
     "jade": "*",
-    "less-middleware": "~0.1.15"
+    "less-middleware": "~0.1.15",
+    "rest": "^1.0.3",
+    "xml2js": "^0.4.1"
   },
   "devDependencies": {
-    "nodeunit": "^0.8.6"
+    "nodeunit": "^0.8.6",
+    "coffee-script": "^1.7.1"
   }
 }
