@@ -3,10 +3,13 @@ routes = require './routes'
 http = require 'http'
 path = require 'path'
 
+server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000
+server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+
 app = express()
 
 app
-  .set 'port', (process.env.PORT || 3000)
+  .set 'port', server_port
   .set 'views', path.join(__dirname, 'views')
   .set 'view engine', 'jade'
   .use express.favicon(path.join(__dirname, 'public/images/favicon.ico'))
@@ -23,5 +26,5 @@ if 'development' == app.get('env')
 
 app.get '/', routes.index
 
-http.createServer(app).listen app.get('port'), () ->
+http.createServer(app).listen server_port, () ->
   console.log "Express server listening on port #{ app.get('port') }"
