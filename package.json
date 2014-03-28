@@ -13,7 +13,9 @@
     "xml2js": "~0.4.1",
     "render-options-injector": "*",
     "coffee-script": "~1.7.1",
-    "pm2": "*"
+    "pm2": "*",
+    "less-middleware": "~0.2.1-beta",
+    "coffee-middleware": "~0.2.1"
   },
   "devDependencies": {
     "grunt-cli": "*",

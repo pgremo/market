@@ -18,7 +18,8 @@ app
   .use express.urlencoded()
   .use express.methodOverride()
   .use app.router
-  .use require('less-middleware')({ src: path.join(__dirname, 'public') })
+  .use require('less-middleware')(path.join(__dirname, 'public'))
+  .use require('coffee-middleware')({ src: path.join(__dirname, 'public'), compress: true })
   .use express.static(path.join(__dirname, 'public'))
 
 if 'development' == app.get('env')
