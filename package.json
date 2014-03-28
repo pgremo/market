@@ -8,8 +8,8 @@
   "dependencies": {
     "express": "3.5.1",
     "jade": "*",
-    "rest": "^1.0.3",
-    "xml2js": "^0.4.1",
+    "rest": "~1.0.3",
+    "xml2js": "~0.4.1",
     "render-options-injector": "*",
     "coffee-script": "~1.7.1",
     "pm2": "*"
