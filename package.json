@@ -20,19 +20,10 @@
     "grunt-cli": "*",
     "grunt": "~0.4.4",
     "load-grunt-tasks": "*",
-    "grunt-contrib-clean": "*",
-    "grunt-contrib-jshint": "*",
     "grunt-contrib-nodeunit": "*",
-    "grunt-contrib-uglify": "*",
     "grunt-contrib-coffee": "*",
     "grunt-coffeelint": "*",
-    "grunt-contrib-less": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-contrib-copy": "*",
-    "grunt-contrib-imagemin": "*",
-    "grunt-contrib-cssmin": "*",
     "node-dev": "~2.1.4",
-    "grunt-exec": "~0.4.2",
-    "grunt-concurrent": "~0.4.2"
+    "grunt-exec": "~0.4.2"
   }
 }
