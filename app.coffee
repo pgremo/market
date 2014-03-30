@@ -9,15 +9,15 @@ url = require 'url'
 promise = require('es6-promise').Promise
 querystring = require 'querystring'
 types = require './data/types'
+regions = require './data/regions'
 _ = require 'underscore'
 numeral = require 'numeral'
 
-server_port = process.env.PORT || 3000
-
 parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
 
+region = _.find(regions, (x) -> x.regionName == 'The Forge').regionID
 groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
-    priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : '10000002'}
+    priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : region}
     priceUrl = "http://api.eve-central.com/api/marketstat?#{querystring.stringify priceQuery}"
 
     rest(priceUrl).then (res) ->
@@ -28,6 +28,8 @@ groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) -
       {category: items[0].categoryName, name: items[0].groupName, types: items}
   )
 )
+
+server_port = process.env.PORT || 3000
 
 app = express()
 
