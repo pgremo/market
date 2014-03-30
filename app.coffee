@@ -1,3 +1,4 @@
+config = require('./config').config
 express = require 'express'
 routes = require './routes'
 market = require './routes/market'
@@ -18,8 +19,7 @@ packageInfo = require './package.json'
 
 parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
 
-regionName = 'The Forge'
-regionID = _.find(regions, (x) -> x.regionName == regionName).regionID
+regionID = _.find(regions, (x) -> x.regionName == config.regionName).regionID
 groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
     priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : regionID}
     priceUrl = "http://api.eve-central.com/api/marketstat?#{querystring.stringify priceQuery}"
@@ -36,7 +36,7 @@ groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) -
 indexedPricedTypes = groups.then (x) ->
   _.object(_.map(_.flatten(_.map(x, (y) -> y.types)), (y) -> [y.typeID, y]))
 
-server_port = process.env.PORT || 3000
+server_port = process.env.PORT || config.port
 
 app = express()
 
@@ -44,7 +44,7 @@ app.locals.numeral = numeral
 app.locals.moment = moment
 app.locals.packageInfo = packageInfo
 app.locals.pricingLoaded = new Date()
-app.locals.pricingRegion = regionName
+app.locals.pricingRegion = config.regionName
 
 app
   .set 'port', server_port

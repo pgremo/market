@@ -2,8 +2,19 @@
   "name": "market",
   "version": "0.0.1",
   "private": true,
+  "description": "simple contract calculator for EVE Online",
+  "contributors": [
+    {
+      "name": "Patrick Gremo",
+      "email": "patrick.gremo@gmail.com"
+    }
+  ],
   "scripts": {
     "start": "coffee app.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pgremo/market"
   },
   "main": "app.coffee",
   "dependencies": {
@@ -29,5 +40,9 @@
     "grunt-coffeelint": "*",
     "node-dev": "~2.1.4",
     "grunt-exec": "~0.4.2"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10"
   }
 }
