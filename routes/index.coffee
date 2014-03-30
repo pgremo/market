@@ -1,2 +1,3 @@
-exports.index = (req, res) ->
-  res.render 'index', { groups: req.groups }
+exports.index = (req, res, groups) ->
+  console.log 'index'
+  res.render 'index', { groups: groups }
