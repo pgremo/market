@@ -3,5 +3,12 @@ extends layout
 block content
   h1= title
   each group in groups
-    each item in group
-        p #{item.typeName}
+    table
+      thead
+        tr
+            th(colspan=2)=group.category + "/" + group.name
+      tbody
+        each item in group.types
+            tr
+                td=item.typeName
+                td=numeral(item.marketstat.sell.avg).format('$0,0.00')

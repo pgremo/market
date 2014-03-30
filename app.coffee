@@ -10,6 +10,7 @@ promise = require('es6-promise').Promise
 querystring = require 'querystring'
 types = require './data/types'
 _ = require 'underscore'
+numeral = require 'numeral'
 
 server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000
 server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
@@ -25,11 +26,13 @@ groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) -
       parseString res.entity, (err, result) ->
         items = x.map (y) ->
           _.extend {marketstat : _.find(result.evec_api.marketstat.type, (z) -> z.id == y.typeID)}, y
-      items
+      {category: items[0].categoryName, name: items[0].groupName, types: items}
   )
 )
 
 app = express()
+
+app.locals.numeral = numeral
 
 app
   .set 'port', server_port
