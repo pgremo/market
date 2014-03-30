@@ -12,6 +12,8 @@ types = require './data/types'
 regions = require './data/regions'
 _ = require 'underscore'
 numeral = require 'numeral'
+moment = require 'moment'
+packageInfo = require './package.json'
 
 parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
 
@@ -34,6 +36,9 @@ server_port = process.env.PORT || 3000
 app = express()
 
 app.locals.numeral = numeral
+app.locals.moment = moment
+app.locals.packageInfo = packageInfo
+app.locals.pricingLoaded = new Date()
 
 app
   .set 'port', server_port
