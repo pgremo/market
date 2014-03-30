@@ -12,8 +12,7 @@ types = require './data/types'
 _ = require 'underscore'
 numeral = require 'numeral'
 
-server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000
-server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+server_port = process.env.PORT || 3000
 
 parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
 
