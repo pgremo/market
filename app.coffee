@@ -2,9 +2,32 @@ express = require 'express'
 routes = require './routes'
 http = require 'http'
 path = require 'path'
+rest = require 'rest'
+xml2js = require 'xml2js'
+util = require 'util'
+url = require 'url'
+promise = require('es6-promise').Promise
+querystring = require 'querystring'
+types = require './data/types'
+_ = require 'underscore'
 
 server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000
 server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+
+parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
+
+groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
+    priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : '10000002'}
+    priceUrl = "http://api.eve-central.com/api/marketstat?#{querystring.stringify priceQuery}"
+
+    rest(priceUrl).then (res) ->
+      items = []
+      parseString res.entity, (err, result) ->
+        items = x.map (y) ->
+          _.extend {marketstat : _.find(result.evec_api.marketstat.type, (z) -> z.id == y.typeID)}, y
+      items
+  )
+)
 
 app = express()
 
@@ -25,7 +48,10 @@ app
 if 'development' == app.get('env')
   app.use express.errorHandler()
 
-app.get '/', routes.index
+app.get '/', (req, res) ->
+  groups.then (x) ->
+    req.groups = x
+    routes.index req, res
 
 http.createServer(app).listen server_port, () ->
-  console.log "Express server listening on port #{ app.get('port') }"
+  console.log "Express server listening on port #{ app.get 'port' }"

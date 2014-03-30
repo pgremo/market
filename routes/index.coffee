@@ -1,2 +1,3 @@
 exports.index = (req, res) ->
-  res.render 'index', { title: 'Express' }
+  console.log req.groups
+  res.render 'index', { groups: req.groups }

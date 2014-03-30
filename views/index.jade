@@ -2,4 +2,6 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  each group in groups
+    each item in group
+        p #{item.typeName}
