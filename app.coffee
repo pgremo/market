@@ -8,7 +8,7 @@ rest = require 'rest'
 xml2js = require 'xml2js'
 util = require 'util'
 url = require 'url'
-promise = require('es6-promise').Promise
+Promise = require('es6-promise').Promise
 querystring = require 'querystring'
 types = require './data/types'
 regions = require './data/regions'
@@ -17,26 +17,44 @@ numeral = require 'numeral'
 moment = require 'moment'
 packageInfo = require './package.json'
 
-parseString = new xml2js.Parser({explicitArray: false, mergeAttrs: true}).parseString
+parser = new xml2js.Parser({explicitArray: false, mergeAttrs: true})
+parseString = (x) ->
+  new Promise (resolve, reject) ->
+    parser.parseString x, (err, result) ->
+      if result?
+        resolve result
+      else
+        reject err
+
+_.mixin {
+  join: (xs, ys, xf, yf, trans) ->
+    result = []
+    for x in xs
+      xk = xf(x)
+      for y in ys
+        if xk == yf(y)
+          result.push trans(x, y)
+    result
+  }
 
 regionID = _.find(regions, (x) -> x.regionName == config.regionName).regionID
-groups = promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
+groups = Promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
     priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : regionID}
     priceUrl = "http://api.eve-central.com/api/marketstat?#{querystring.stringify priceQuery}"
 
-    rest(priceUrl).then (res) ->
-      items = []
-      parseString res.entity, (err, result) ->
-        items = x.map (y) ->
-          _.extend {marketstat : _.find(result.evec_api.marketstat.type, (z) -> z.id == y.typeID)}, y
-      {category: items[0].categoryName, name: items[0].groupName, types: items}
+    rest(priceUrl)
+      .then (res) ->
+        parseString res.entity
+      .then (res) ->
+        items = _.join x, res.evec_api.marketstat.type, ((x) -> x.typeID), ((y) -> y.id), ((x, y) -> _.extend({marketstat: y}, x))
+        {category: items[0].categoryName, name: items[0].groupName, types: items}
   )
 )
 
 indexedPricedTypes = groups.then (x) ->
   _.object(_.map(_.flatten(_.map(x, (y) -> y.types)), (y) -> [y.typeID, y]))
 
-server_port = process.env.PORT || config.port
+server_port = process.env.PORT or config.port
 
 app = express()
 
@@ -74,7 +92,7 @@ app.post '/', (req, res) ->
       price = type.marketstat.sell.avg
       count = parseFloat(x[1])
       {type: type, count: count, total: count * price})
-    result = {
+    market.contractDetail req, res, {
       count: _.reduce(priced, (seed, x) ->
           seed + x.count
         0),
@@ -83,8 +101,6 @@ app.post '/', (req, res) ->
         0),
       types: priced
     }
-    console.log 'done calculating'
-    market.contractDetail req, res, result
 
 http.createServer(app).listen server_port, () ->
   console.log "Express server listening on port #{ app.get 'port' }"
