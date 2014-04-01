@@ -1,7 +1,5 @@
 config = require('./config').config
 express = require 'express'
-routes = require './routes'
-market = require './routes/market'
 http = require 'http'
 path = require 'path'
 rest = require 'rest'
@@ -83,7 +81,7 @@ if 'development' == app.get('env')
 
 app.get '/', (req, res) ->
   groups.then (x) ->
-    routes.index req, res, x
+    res.render 'index', { groups: x }
 
 app.post '/', (req, res) ->
   indexedPricedTypes.then (ipts) ->
@@ -92,7 +90,7 @@ app.post '/', (req, res) ->
       price = type.marketstat.sell.avg
       count = parseFloat(x[1])
       {type: type, count: count, total: count * price})
-    market.contractDetail req, res, {
+    res.render 'index_post', {
       count: _.reduce(priced, (seed, x) ->
           seed + x.count
         0),
