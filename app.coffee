@@ -33,24 +33,28 @@ _.mixin {
         if xk == yf(y)
           result.push trans(x, y)
     result
+  fmap: (xs, f) ->
+    _.flatten _.map(xs, f)
+  fpluck: (xs, property) ->
+    _.flatten _.pluck(xs, property)
   }
 
 regionID = _.find(regions, (x) -> x.regionName == config.regionName).regionID
-groups = Promise.all(_.map(_.values(_.groupBy(types, (x) -> x.groupName)), (x) ->
-    priceQuery = {typeid : x.map((y) -> y.typeID), regionlimit : regionID}
-    priceUrl = "http://api.eve-central.com/api/marketstat?#{querystring.stringify priceQuery}"
+groups = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
+    priceUrl = url.parse(config.pricingURL)
+    priceUrl.search = querystring.stringify {typeid : _.pluck(x, 'typeID'), regionlimit : regionID}
 
-    rest(priceUrl)
+    rest(url.format priceUrl)
       .then (res) ->
         parseString res.entity
       .then (res) ->
-        items = _.join x, res.evec_api.marketstat.type, ((x) -> x.typeID), ((y) -> y.id), ((x, y) -> _.extend({marketstat: y}, x))
+        items = _.join x, res.evec_api.marketstat.type, _.property('typeID'), _.property('id'), ((x, y) -> _.extend({marketstat: y}, x))
         {category: items[0].categoryName, name: items[0].groupName, types: items}
   )
 )
 
 indexedPricedTypes = groups.then (x) ->
-  _.object(_.map(_.flatten(_.map(x, (y) -> y.types)), (y) -> [y.typeID, y]))
+  _.indexBy _.fpluck(x, 'types'), 'typeID'
 
 server_port = process.env.PORT or config.port
 
