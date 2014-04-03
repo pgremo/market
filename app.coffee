@@ -88,8 +88,7 @@ app.get '/', (req, res) ->
 app.post '/', (req, res) ->
   pricedTypesById.then (ipts) ->
     priced = _.map(_.filter(_.pairs(req.body), (x) -> x[1] != ''), (x) ->
-      type = ipts[x[0]]
-      count = parseFloat x[1]
+      [type, count] = [ipts[x[0]], parseFloat x[1]]
       {type: type, count: count, total: count * type.marketstat.sell.avg})
     res.render 'index_post', {
       count: _.reduce(priced, (seed, x) ->
