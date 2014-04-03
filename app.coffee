@@ -33,18 +33,14 @@ _.mixin {
         if xk == yf y
           result.push trans(x, y)
     result
-  fmap: (xs, f) ->
-    _.flatten _.map(xs, f)
-  fpluck: (xs, property) ->
-    _.flatten _.pluck(xs, property)
   }
 
 regionID = _.find(regions, (x) -> x.regionName == config.regionName).regionID
-groups = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
+groupsByName = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
     priceUrl = url.parse config.pricingURL
     priceUrl.search = querystring.stringify {typeid : _.pluck(x, 'typeID'), regionlimit : regionID}
 
-    rest(url.format priceUrl)
+    rest url.format priceUrl
       .then (res) ->
         parseString res.entity
       .then (res) ->
@@ -53,11 +49,10 @@ groups = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
   )
 )
 
-indexedPricedTypes = groups.then (x) ->
+pricedTypesById = groupsByName.then (x) ->
   _.indexBy _.flatten(_.map(x, (y) -> y.types)),
     (y) ->
       y.info.typeID
-
 
 server_port = process.env.PORT or config.port
 
@@ -87,11 +82,11 @@ if 'development' == app.get('env')
   app.use express.errorHandler()
 
 app.get '/', (req, res) ->
-  groups.then (x) ->
+  groupsByName.then (x) ->
     res.render 'index', { groups: x }
 
 app.post '/', (req, res) ->
-  indexedPricedTypes.then (ipts) ->
+  pricedTypesById.then (ipts) ->
     priced = _.map(_.filter(_.pairs(req.body), (x) -> x[1] != ''), (x) ->
       type = ipts[x[0]]
       count = parseFloat x[1]
@@ -107,4 +102,4 @@ app.post '/', (req, res) ->
     }
 
 http.createServer(app).listen server_port, () ->
-  console.log "Express server listening on port #{ app.get 'port' }"
+  console.log "Express server listening on port #{ server_port }"
