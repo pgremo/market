@@ -31,7 +31,7 @@ _.mixin {
       xk = xf x
       for y in ys
         if xk == yf y
-          result.push trans(x, y)
+          result.push trans x, y
     result
   }
 
@@ -66,17 +66,17 @@ app.locals.pricingRegion = config.regionName
 
 app
   .set 'port', server_port
-  .set 'views', path.join(__dirname, 'views')
+  .set 'views', path.join __dirname, 'views'
   .set 'view engine', 'jade'
-  .use express.favicon(path.join(__dirname, 'public/images/favicon.ico'))
-  .use express.logger('dev')
+  .use express.favicon(path.join __dirname, 'public/images/favicon.ico')
+  .use express.logger 'dev'
   .use express.json()
   .use express.urlencoded()
   .use express.methodOverride()
   .use app.router
-  .use require('less-middleware')(path.join(__dirname, 'public'))
-  .use require('coffee-middleware')({ src: path.join(__dirname, 'public'), compress: true })
-  .use express.static(path.join(__dirname, 'public'))
+  .use require('less-middleware') path.join(__dirname, 'public')
+  .use require('coffee-middleware') { src: path.join(__dirname, 'public'), compress: true }
+  .use express.static path.join __dirname, 'public'
 
 if 'development' == app.get('env')
   app.use express.errorHandler()
@@ -87,9 +87,9 @@ app.get '/', (req, res) ->
 
 app.post '/', (req, res) ->
   pricedTypesById.then (ipts) ->
-    priced = _.map(_.filter(_.pairs(req.body), (x) -> x[1] != ''), (x) ->
-      [type, count] = [ipts[x[0]], parseFloat x[1]]
-      {type: type, count: count, total: count * type.marketstat.sell.avg})
+    priced = for item in _.pairs(req.body) when item[1] != ''
+      [type, count] = [ipts[item[0]], parseFloat item[1]]
+      {type: type, count: count, total: count * type.marketstat.sell.avg}
     res.render 'index_post', {
       count: _.reduce(priced, (seed, x) ->
           seed + x.count
@@ -100,5 +100,7 @@ app.post '/', (req, res) ->
       types: priced
     }
 
-http.createServer(app).listen server_port, () ->
-  console.log "Express server listening on port #{ server_port }"
+http
+  .createServer app
+  .listen server_port, () ->
+    console.log "Express server listening on port #{ server_port }"
