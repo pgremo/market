@@ -32,13 +32,11 @@
     "es6-shim": "^0.10.1"
   },
   "devDependencies": {
-    "grunt-cli": "*",
     "grunt": "~0.4.4",
     "load-grunt-tasks": "*",
     "grunt-contrib-nodeunit": "*",
     "grunt-contrib-coffee": "*",
     "grunt-coffeelint": "*",
-    "node-dev": "~2.1.4",
     "grunt-exec": "~0.4.2"
   },
   "license": "MIT",
