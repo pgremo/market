@@ -27,9 +27,9 @@
     "less-middleware": "~0.2.1-beta",
     "coffee-middleware": "~0.2.1",
     "underscore": "^1.6.0",
-    "es6-promise": "^0.1.1",
     "numeral": "^1.5.3",
-    "moment": "^2.5.1"
+    "moment": "^2.5.1",
+    "es6-shim": "^0.10.1"
   },
   "devDependencies": {
     "grunt-cli": "*",

@@ -1,3 +1,4 @@
+require('es6-shim')
 config = require('./config').config
 express = require 'express'
 http = require 'http'
@@ -6,14 +7,13 @@ rest = require 'rest'
 xml2js = require 'xml2js'
 util = require 'util'
 url = require 'url'
-Promise = require('es6-promise').Promise
 querystring = require 'querystring'
-types = require './data/types'
-regions = require './data/regions'
 _ = require 'underscore'
 numeral = require 'numeral'
 moment = require 'moment'
 packageInfo = require './package.json'
+types = require './data/types'
+regions = require './data/regions'
 
 parser = new xml2js.Parser({explicitArray: false, mergeAttrs: true})
 parseString = (x) ->
@@ -35,10 +35,10 @@ _.mixin {
     result
   }
 
-regionID = _.find(regions, (x) -> x.regionName == config.regionName).regionID
-groupsByName = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
+regionID = regions.find((x) -> x.regionName == config.regionName).regionID
+groupsByName = Promise.all _.map _.values(_.groupBy(types, 'groupName')), (x) ->
     priceUrl = url.parse config.pricingURL
-    priceUrl.search = querystring.stringify {typeid : _.pluck(x, 'typeID'), regionlimit : regionID}
+    priceUrl.search = querystring.stringify {typeid : y.typeID for y in x, regionlimit : regionID}
 
     rest url.format priceUrl
       .then (res) ->
@@ -46,8 +46,6 @@ groupsByName = Promise.all(_.map(_.values(_.groupBy(types, 'groupName')), (x) ->
       .then (res) ->
         items = _.join x, res.evec_api.marketstat.type, _.property('typeID'), _.property('id'), ((x, y) -> {marketstat: y, info: x})
         {category: items[0].info.categoryName, name: items[0].info.groupName, types: items}
-  )
-)
 
 pricedTypesById = groupsByName.then (x) ->
   _.indexBy _.flatten(_.map(x, (y) -> y.types)),
@@ -87,14 +85,14 @@ app.get '/', (req, res) ->
 
 app.post '/', (req, res) ->
   pricedTypesById.then (ipts) ->
-    priced = for item in _.pairs(req.body) when item[1] != ''
-      [type, count] = [ipts[item[0]], parseFloat item[1]]
+    priced = for typeid, num of req.body when num != ''
+      [type, count] = [ipts[typeid], parseFloat num]
       {type: type, count: count, total: count * type.marketstat.sell.avg}
     res.render 'index_post', {
-      count: _.reduce(priced, (seed, x) ->
+      count: priced.reduce((seed, x) ->
           seed + x.count
         0),
-      total: _.reduce(priced, (seed, x) ->
+      total: priced.reduce((seed, x) ->
           seed + x.total
         0),
       types: priced
