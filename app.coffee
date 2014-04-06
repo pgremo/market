@@ -1,4 +1,4 @@
-require('es6-shim')
+require 'es6-shim'
 config = require('./config').config
 express = require 'express'
 http = require 'http'
@@ -15,7 +15,10 @@ packageInfo = require './package.json'
 types = require './data/types'
 regions = require './data/regions'
 
-parser = new xml2js.Parser({explicitArray: false, mergeAttrs: true})
+parser = new xml2js.Parser
+  explicitArray: false
+  mergeAttrs: true
+
 parseString = (x) ->
   new Promise (resolve, reject) ->
     parser.parseString x, (err, result) ->
@@ -24,33 +27,35 @@ parseString = (x) ->
       else
         reject err
 
-_.mixin {
-  join: (xs, ys, xf, yf, trans) ->
-    result = []
-    for x in xs
-      xk = xf x
-      for y in ys
-        if xk == yf y
-          result.push trans x, y
-    result
-  }
+Array::flatten = () -> _.flatten this
+Array::groupBy = (x) -> _.groupBy this, x
+Array::indexBy = (x) -> _.indexBy this, x
 
 regionID = regions.find((x) -> x.regionName == config.regionName).regionID
-groupsByName = Promise.all _.map _.values(_.groupBy(types, 'groupName')), (x) ->
-    priceUrl = url.parse config.pricingURL
-    priceUrl.search = querystring.stringify {typeid : y.typeID for y in x, regionlimit : regionID}
 
+groups = for key, xs of types.groupBy 'groupName'
+  do (key, xs) ->
+    priceUrl = url.parse config.pricingURL
+    priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
     rest url.format priceUrl
       .then (res) ->
         parseString res.entity
       .then (res) ->
-        items = _.join x, res.evec_api.marketstat.type, _.property('typeID'), _.property('id'), ((x, y) -> {marketstat: y, info: x})
-        {category: items[0].info.categoryName, name: items[0].info.groupName, types: items}
+        items = []
+        for x in xs
+          for y in res.evec_api.marketstat.type
+            if x.typeID is y.id
+              items.push {info: x, marketstat: y}
+        {category: xs[0].categoryName, name: xs[0].groupName, types: items}
 
-pricedTypesById = groupsByName.then (x) ->
-  _.indexBy _.flatten(_.map(x, (y) -> y.types)),
-    (y) ->
-      y.info.typeID
+groupsByName = Promise.all groups
+
+pricedTypesById = groupsByName
+  .then (x) ->
+    x
+      .map (y) -> y.types
+      .flatten()
+      .indexBy (y) -> y.info.typeID
 
 server_port = process.env.PORT or config.port
 
@@ -73,7 +78,9 @@ app
   .use express.methodOverride()
   .use app.router
   .use require('less-middleware') path.join(__dirname, 'public')
-  .use require('coffee-middleware') { src: path.join(__dirname, 'public'), compress: true }
+  .use require('coffee-middleware')
+    src: path.join __dirname, 'public'
+    compress: true
   .use express.static path.join __dirname, 'public'
 
 if 'development' == app.get('env')
@@ -81,14 +88,14 @@ if 'development' == app.get('env')
 
 app.get '/', (req, res) ->
   groupsByName.then (x) ->
-    res.render 'index', { groups: x }
+    res.render 'index', groups: x
 
 app.post '/', (req, res) ->
   pricedTypesById.then (ipts) ->
     priced = for typeid, num of req.body when num != ''
       [type, count] = [ipts[typeid], parseFloat num]
       {type: type, count: count, total: count * type.marketstat.sell.avg}
-    res.render 'index_post', {
+    res.render 'index_post',
       count: priced.reduce((seed, x) ->
           seed + x.count
         0),
@@ -96,7 +103,6 @@ app.post '/', (req, res) ->
           seed + x.total
         0),
       types: priced
-    }
 
 http
   .createServer app
