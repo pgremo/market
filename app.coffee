@@ -34,7 +34,7 @@ Array::indexBy = (x) -> _.indexBy this, x
 regionID = regions.find((x) -> x.regionName == config.regionName).regionID
 
 groups = for key, xs of types.groupBy 'groupName'
-  do (key, xs) ->
+  do (xs) ->
     priceUrl = url.parse config.pricingURL
     priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
     rest url.format priceUrl
