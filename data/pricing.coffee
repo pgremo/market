@@ -1,4 +1,4 @@
-config = require('config')
+config = require 'config'
 xml2js = require 'xml2js'
 querystring = require 'querystring'
 url = require 'url'
@@ -18,29 +18,36 @@ parseString = (x) ->
       else
         reject err
 
-regionID = regions.find((x) -> x.regionName == config.regionName).regionID
+pricingDate = null
+groupsByName = null
+pricedTypesById = null
 
-groups = for key, xs of types.groupBy 'groupName'
-  do (xs) ->
-    priceUrl = url.parse config.pricingURL
-    priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
-    rest url.format priceUrl
-    .then (res) ->
-      parseString res.entity
-    .then (res) ->
-      category: xs[0].categoryName
-      name: xs[0].groupName
-      types: [xs, res.evec_api.marketstat.type].zip().map (x) -> {info: x[0], marketstat: x[1]}
+load = () ->
+  regionID = regions.find((x) -> x.regionName == config.regionName).regionID
+  pricedGroups = for key, xs of types.groupBy 'groupName'
+    do (xs) ->
+      priceUrl = url.parse config.pricingURL
+      priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
+      rest url.format priceUrl
+      .then (res) ->
+        parseString res.entity
+      .then (res) ->
+        category: xs[0].categoryName
+        name: xs[0].groupName
+        types: [xs, res.evec_api.marketstat.type].zip().map (x) -> {info: x[0], marketstat: x[1]}
+  groupsByName = Promise.all pricedGroups
+  pricedTypesById = groupsByName
+    .then (x) ->
+      x
+      .map (y) -> y.types
+      .flatten()
+      .indexBy (y) -> y.info.typeID
+  pricingDate = new Date()
 
-groupsByName = Promise.all groups
+load()
 
-module.exports.groupsByName = groupsByName
+module.exports.pricingDate = pricingDate
 
-pricedTypesById = groupsByName
-.then (x) ->
-  x
-  .map (y) -> y.types
-  .flatten()
-  .indexBy (y) -> y.info.typeID
+module.exports.groupsByName = () -> groupsByName
 
-module.exports.pricedTypesById = pricedTypesById
+module.exports.pricedTypesById = () -> pricedTypesById

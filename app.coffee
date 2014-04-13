@@ -1,11 +1,11 @@
 require 'es6-shim'
-config = require('./config')
+config = require './config'
 express = require 'express'
 http = require 'http'
 path = require 'path'
 util = require 'util'
 _ = require 'underscore'
-require('array')
+require 'array'
 numeral = require 'numeral'
 moment = require 'moment'
 packageInfo = require './package.json'
@@ -20,7 +20,7 @@ app = express()
 app.locals.numeral = numeral
 app.locals.moment = moment
 app.locals.packageInfo = packageInfo
-app.locals.pricingLoaded = new Date()
+app.locals.pricingLoaded = pricing.pricingDate
 app.locals.pricingRegion = config.regionName
 
 app
@@ -43,11 +43,11 @@ if 'development' == app.get('env')
   app.use express.errorHandler()
 
 app.get '/', (req, res) ->
-  pricing.groupsByName.then (x) ->
+  pricing.groupsByName().then (x) ->
     res.render 'index', groups: x
 
 app.post '/', (req, res) ->
-  pricing.pricedTypesById.then (ipts) ->
+  pricing.pricedTypesById().then (ipts) ->
     priced = for typeid, num of req.body when num != ''
       [type, count] = [ipts[typeid], parseFloat num]
       {type: type, count: count, total: count * type.marketstat.sell.avg}
