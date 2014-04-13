@@ -1,4 +1,4 @@
-config = require 'config'
+config = require '../config'
 xml2js = require 'xml2js'
 querystring = require 'querystring'
 url = require 'url'
