@@ -5,6 +5,7 @@ url = require 'url'
 rest = require 'rest'
 types = require './types'
 regions = require './regions'
+schedule = require 'node-schedule'
 
 parser = new xml2js.Parser
   explicitArray: false
@@ -46,8 +47,8 @@ load = () ->
 
 load()
 
-module.exports.pricingDate = pricingDate
+schedule.scheduleJob '00 00 * * *', load
 
+module.exports.pricingDate = () -> pricingDate
 module.exports.groupsByName = () -> groupsByName
-
 module.exports.pricedTypesById = () -> pricedTypesById

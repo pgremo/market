@@ -7,4 +7,4 @@ html
     img(src='/images/logo.png')
     block content
   footer
-    p Version: #{packageInfo.version}, Pricing Data: #{pricingRegion}@#{moment(pricingLoaded).format('L')}
+    p Version: #{packageInfo.version}, Pricing Data: #{pricingRegion}@#{moment(pricingLoaded()).format('L')}
