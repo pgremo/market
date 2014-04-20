@@ -17,7 +17,7 @@ parseString = (x) ->
       if result?
         resolve result
       else
-        reject err
+        resolve result
 
 pricingDate = null
 groupsByName = null

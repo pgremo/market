@@ -1,23 +1,56 @@
-config = require('./config').config
+'use strict';
+
+request = require 'request'
 
 module.exports = (grunt) ->
+  require('time-grunt') grunt
+  require('load-grunt-tasks') grunt
+
+  reloadPort = 35729
+
   grunt.initConfig
     pkg: grunt.file.readJSON 'package.json'
-    coffeelint:
+    develop:
+      server:
+        file: 'app.coffee'
+        cmd: 'coffee'
+    watch:
       options:
-        max_line_length:
-          value: 120
-          level: "warn"
-        no_trailing_whitespace:
-          level: "warn"
-      app: ['public/coffeescripts/**/*.coffee']
-    exec:
-      dev:
+        nospawn: true,
+        livereload: reloadPort
+      server:
+        files: [
+          'app.coffee',
+          'routes/*.coffee'
+        ],
+        tasks: ['develop', 'delayed-livereload']
+      js:
+        files: ['public/js/*.coffee']
         options:
-          stdout: true
-          stderr: true
-        command: 'node-dev app.coffee'
+          livereload: reloadPort
+      css:
+        files: ['public/css/*.css']
+        options:
+          livereload: reloadPort
+      jade:
+        files: ['views/*.jade']
+        options:
+          livereload: reloadPort
 
-  require('load-grunt-tasks')(grunt)
-  grunt.loadNpmTasks 'grunt-exec'
-  grunt.registerTask 'default', ['exec:dev']
+  grunt.config.requires 'watch.server.files'
+  files = grunt.config 'watch.server.files'
+  files = grunt.file.expand files
+
+  grunt.registerTask 'delayed-livereload', 'Live reload after the node server has restarted.', () ->
+    done = this.async()
+    setTimeout () ->
+      request.get "http://localhost:#{reloadPort}/changed?files=#{files.join(',')}",  (err, res) ->
+        reloaded = !err && res.statusCode is 200
+        if reloaded
+          grunt.log.ok 'Delayed live reload successful.'
+        else
+          grunt.log.error 'Unable to make a delayed live reload.'
+        done reloaded
+    , 500
+
+  grunt.registerTask 'default', ['develop', 'watch']

@@ -13,7 +13,7 @@ types = require './data/types'
 regions = require './data/regions'
 pricing = require './data/pricing'
 
-server_port = process.env.PORT or config.port
+port = process.env.PORT or config.port
 
 app = express()
 
@@ -24,43 +24,46 @@ app.locals.pricingLoaded = pricing.pricingDate
 app.locals.pricingRegion = config.regionName
 
 app
-  .set 'port', server_port
   .set 'views', path.join __dirname, 'views'
   .set 'view engine', 'jade'
-  .use express.favicon(path.join __dirname, 'public/images/favicon.ico')
-  .use express.logger 'dev'
-  .use express.json()
-  .use express.urlencoded()
-  .use express.methodOverride()
-  .use app.router
+  .use require('static-favicon') path.join __dirname, 'public/images/favicon.ico'
+  .use require('morgan') 'dev'
+  .use require('body-parser')()
+  .use require('method-override')()
   .use require('less-middleware') path.join(__dirname, 'public')
   .use require('coffee-middleware')
     src: path.join __dirname, 'public'
     compress: true
   .use express.static path.join __dirname, 'public'
 
-if 'development' == app.get('env')
-  app.use express.errorHandler()
+if process.env.DEBUG
+  app.use require('errorhandler')()
 
-app.get '/', (req, res) ->
-  pricing.groupsByName().then (x) ->
-    res.render 'index', groups: x
+router = express.Router()
 
-app.post '/', (req, res) ->
-  pricing.pricedTypesById().then (ipts) ->
-    priced = for typeid, num of req.body when num != ''
-      [type, count] = [ipts[typeid], parseFloat num]
-      {type: type, count: count, total: count * type.marketstat.sell.avg}
-    res.render 'index_post',
-      count: priced.reduce((seed, x) ->
-          seed + x.count
-        0),
-      total: priced.reduce((seed, x) ->
-          seed + x.total
-        0),
-      types: priced
+router.route '/'
+  .get (req, res) ->
+    pricing.groupsByName()
+      .then (x) ->
+        res.render 'index', groups: x
+      .catch (err) -> console.log err
 
-http
-  .createServer app
-  .listen server_port, () ->
-    console.log "Express server listening on port #{ server_port }"
+  .post (req, res) ->
+    pricing.pricedTypesById()
+      .then (ipts) ->
+        priced = for typeid, num of req.body when num != ''
+          [type, count] = [ipts[typeid], parseFloat num]
+          {type: type, count: count, total: count * type.marketstat.sell.avg}
+        res.render 'index_post',
+          count: (priced
+            .map (x) -> x.count
+            .reduce (seed, x) -> seed + x)
+          total: (priced
+            .map (x) -> x.total
+            .reduce (seed, x) -> seed + x)
+          types: priced
+      .catch (err) -> console.log err
+
+app.use '/', router
+
+app.listen port, () -> console.log "Express server listening on port #{port}"
