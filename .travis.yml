@@ -4,7 +4,7 @@ node_js:
 deploy:
   provider: heroku
   api_key:
-    secure: ZvZjugs5MoL7ApgzVhC29LuRrQhsTYq4XjQU5vQaGTqMFjf/RmbhO+dqLfTnjmsRTV5mcNLyMANpOpyhYfWJPlTUTYcIi0PXz2UwPNpAoZo60gqezHE6fQYJO20Kn8Bg16a6NvsAlC2aC7Bpq32LYR16NiU24pD3xCxaGckaGE4=
+    secure: Gm/t+CM9dTLtHh77ekzrotkFP4KHQE0b+tlZjuFXdp6EPtnx3L4MtMBhjD2m31tGaJMvqa/p8wBNdgwgIQVimk4b6sgqTTVZmpmz4AllqTu6/GDhbsQdpBygRa6LhjdmgHlmp8sATtMq3SHjY5vFP9sQtCGg8gYwHKnADeTFwtM=
   app: stormy-forest-7328
   on:
     repo: pgremo/market
