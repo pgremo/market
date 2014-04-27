@@ -30,12 +30,12 @@ load = () ->
       priceUrl = url.parse config.pricingURL
       priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
       rest url.format priceUrl
-        .then (res) ->
-          parseString res.entity
-        .then (res) ->
-          category: xs[0].categoryName
-          name: xs[0].groupName
-          types: [xs, res.evec_api.marketstat.type].zip().map (x) -> {info: x[0], marketstat: x[1]}
+      .then (res) ->
+        parseString res.entity
+      .then (res) ->
+        category: xs[0].categoryName
+        name: xs[0].groupName
+        types: [xs, res.evec_api.marketstat.type].zip().map (x) -> {info: x[0], marketstat: x[1]}
   groupsByName = Promise.all pricedGroups
   pricedTypesById = groupsByName
     .then (x) ->

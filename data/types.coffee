@@ -245,4 +245,4 @@ module.exports = [
   {"categoryName":"Planetary Commodities","groupName":"Specialized Commodities","typeID":"17392","typeName":"Data Chips","volume":"6"},
   {"categoryName":"Planetary Commodities","groupName":"Specialized Commodities","typeID":"17898","typeName":"High-Tech Transmitters","volume":"6"},
   {"categoryName":"Planetary Commodities","groupName":"Specialized Commodities","typeID":"28974","typeName":"Vaccines","volume":"6"}
-];
+]

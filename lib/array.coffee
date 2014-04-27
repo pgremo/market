@@ -1,4 +1,4 @@
-_ = require 'underscore'
+_ = require 'lodash'
 
 Array::flatten = () -> _.flatten this
 Array::groupBy = (x) -> _.groupBy this, x
