@@ -8,3 +8,9 @@ deploy:
   app: stormy-forest-7328
   on:
     repo: pgremo/market
+
+before_install:
+  - npm install -g gulp
+
+script:
+  - gulp build --require coffee-script/register
