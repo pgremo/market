@@ -6,6 +6,7 @@ rest = require 'rest'
 types = require './types'
 regions = require './regions'
 schedule = require 'node-schedule'
+util = require 'util'
 
 parser = new xml2js.Parser
   explicitArray: false
@@ -17,7 +18,7 @@ parseString = (x) ->
       if result?
         resolve result
       else
-        resolve result
+        reject err
 
 pricingDate = null
 groupsByName = null
@@ -26,7 +27,7 @@ pricedTypesById = null
 load = () ->
   regionID = regions.find((x) -> x.regionName == config.regionName).regionID
   pricedGroups = for key, xs of types.groupBy 'groupName'
-    do (xs) ->
+    do (key, xs) ->
       priceUrl = url.parse config.pricingURL
       priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
       rest url.format priceUrl
@@ -35,7 +36,7 @@ load = () ->
       .then (res) ->
         category: xs[0].categoryName
         name: xs[0].groupName
-        types: [xs, res.evec_api.marketstat.type].zip().map (x) -> {info: x[0], marketstat: x[1]}
+        types: [xs, [res.evec_api.marketstat.type].flatten()].zip().map (x) -> {info: x[0], marketstat: x[1]}
   groupsByName = Promise.all pricedGroups
   pricedTypesById = groupsByName
     .then (x) ->
@@ -49,6 +50,6 @@ load()
 
 schedule.scheduleJob '00 00 * * *', load
 
-module.exports.pricingDate = () -> pricingDate
-module.exports.groupsByName = () -> groupsByName
-module.exports.pricedTypesById = () -> pricedTypesById
+module.exports.pricingDate = -> pricingDate
+module.exports.groupsByName = -> groupsByName
+module.exports.pricedTypesById = -> pricedTypesById
