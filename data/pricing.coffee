@@ -36,7 +36,7 @@ load = () ->
       .then (res) ->
         category: xs[0].categoryName
         name: xs[0].groupName
-        types: [xs, [res.evec_api.marketstat.type].flatten()].zip().map (x) -> {info: x[0], marketstat: x[1]}
+        types: [xs, [res.evec_api.marketstat.type].flatten()].zip().map (x) -> {info: x[0], price: x[1].sell.avg * .85}
   groupsByName = Promise.all pricedGroups
   pricedTypesById = groupsByName
     .then (x) ->

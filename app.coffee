@@ -53,7 +53,7 @@ router.route '/'
     .then (ipts) ->
       priced = for typeid, num of req.body when num != ''
         [type, count] = [ipts[typeid], parseFloat num]
-        {type: type, count: count, total: count * type.marketstat.sell.avg}
+        {type: type, count: count, total: count * type.price}
       res.render 'index_post',
         count: (priced
           .map (x) -> x.count

@@ -11,7 +11,7 @@ block content
             each item in group.types
                 tr
                     td=item.info.typeName
-                    td=numeral(item.marketstat.sell.avg).format('$0,0.00')
+                    td=numeral(item.price).format('$0,0.00')
                     td
                         input(id=item.info.typeID,type='text',name=item.info.typeID)
         input(type="submit", value="Submit")
