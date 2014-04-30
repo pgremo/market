@@ -1,3 +1,4 @@
+require 'es6-shim'
 config = require '../config'
 xml2js = require 'xml2js'
 querystring = require 'querystring'
@@ -7,6 +8,7 @@ types = require './types'
 regions = require './regions'
 schedule = require 'node-schedule'
 util = require 'util'
+require '../lib/array'
 
 parser = new xml2js.Parser
   explicitArray: false
@@ -24,7 +26,7 @@ pricingDate = null
 groupsByName = null
 pricedTypesById = null
 
-load = () ->
+load = ->
   regionID = regions.find((x) -> x.regionName == config.regionName).regionID
   pricedGroups = for key, xs of types.groupBy 'groupName'
     do (key, xs) ->

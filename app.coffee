@@ -1,17 +1,11 @@
-require 'es6-shim'
 config = require './config'
 express = require 'express'
-http = require 'http'
 path = require 'path'
-util = require 'util'
-_ = require 'lodash'
-require './lib/array'
 numeral = require 'numeral'
 moment = require 'moment'
 packageInfo = require './package.json'
-types = require './data/types'
-regions = require './data/regions'
 pricing = require './data/pricing'
+routes = require './routes'
 
 port = process.env.PORT or config.port
 
@@ -42,28 +36,9 @@ if process.env.DEBUG
 router = express.Router()
 
 router.route '/'
-.get (req, res) ->
-  pricing.groupsByName()
-    .then (x) ->
-      res.render 'index', groups: x
-    .catch (err) -> console.log err
-
-.post (req, res) ->
-  pricing.pricedTypesById()
-    .then (ipts) ->
-      priced = for typeid, num of req.body when num != ''
-        [type, count] = [ipts[typeid], parseFloat num]
-        {type: type, count: count, total: count * type.price}
-      res.render 'index_post',
-        count: (priced
-          .map (x) -> x.count
-          .reduce (seed, x) -> seed + x)
-        total: (priced
-          .map (x) -> x.total
-          .reduce (seed, x) -> seed + x)
-        types: priced
-    .catch (err) -> console.log err
+  .get routes.index
+  .post routes.price
 
 app.use '/', router
 
-app.listen port, () -> console.log "Express server listening on port #{port}"
+app.listen port, -> console.log "Express server listening on port #{port}"
