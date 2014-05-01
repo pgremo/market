@@ -34,11 +34,15 @@ if process.env.DEBUG
   app.use require('errorhandler')()
 
 router = express.Router()
-
 router.route '/'
   .get routes.index
   .post routes.price
-
 app.use '/', router
+
+router = express.Router()
+router.route '/'
+  .get routes.index2
+  .post routes.price2
+app.use '/2', router
 
 app.listen port, -> console.log "Express server listening on port #{port}"

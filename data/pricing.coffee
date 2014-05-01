@@ -25,6 +25,7 @@ parseString = (x) ->
 pricingDate = null
 groupsByName = null
 pricedTypesById = null
+pricedTypesByName = null
 
 load = ->
   regionID = regions.find((x) -> x.regionName == config.regionName).regionID
@@ -46,6 +47,12 @@ load = ->
       .map (y) -> y.types
       .flatten()
       .indexBy (y) -> y.info.typeID
+  pricedTypesByName = groupsByName
+    .then (x) ->
+      x
+      .map (y) -> y.types
+      .flatten()
+      .indexBy (y) -> y.info.typeName
   pricingDate = new Date()
 
 load()
@@ -55,3 +62,4 @@ schedule.scheduleJob '00 00 * * *', load
 module.exports.pricingDate = -> pricingDate
 module.exports.groupsByName = -> groupsByName
 module.exports.pricedTypesById = -> pricedTypesById
+module.exports.pricedTypesByName = -> pricedTypesByName
