@@ -42,16 +42,6 @@ groupsByName = ->
           types: _.zip(xs, _.flatten([res.evec_api.marketstat.type])).map (x) -> {info: x[0], price: x[1].sell.avg * .85}
     Promise.all pricedGroups
 
-pricedTypesById = ->
-  cache.get 'pricedTypesById', expiry(), ->
-    groupsByName()
-      .then (x) ->
-        _.chain(x)
-        .map (y) -> y.types
-        .flatten()
-        .indexBy (y) -> y.info.typeID
-        .valueOf()
-
 pricedTypesByName = ->
   cache.get 'pricedTypesByName', expiry(), ->
     groupsByName()
@@ -64,5 +54,4 @@ pricedTypesByName = ->
 
 module.exports.pricingDate = -> new Date()
 module.exports.groupsByName = groupsByName
-module.exports.pricedTypesById = pricedTypesById
 module.exports.pricedTypesByName = pricedTypesByName
