@@ -1,17 +1,15 @@
 extends layout
 
 block content
+    p Copy and Paste from the List View of EVE Online's Hanger or simply list items and amounts
+    p Exmples of listing items:
+    ol
+        li Clear Icicle x10
+        li Krystallos 13
+        li 3 Scordite
+        li 65x Mercoxit
+        li Iridescent Gneiss
+        li Massive Scordite
     form(method='post')
-      each group in groups
-        table
-          thead
-            tr
-                th(colspan=3)=group.category + "/" + group.name
-          tbody
-            each item in group.types
-                tr
-                    td=item.info.typeName
-                    td=numeral(item.price).format('$0,0.00')
-                    td
-                        input(id=item.info.typeID,type='text',name=item.info.typeID)
-        input(type="submit", value="Submit")
+        textarea(name='data')
+        input(type='submit',value='Submit')

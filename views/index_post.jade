@@ -8,9 +8,9 @@ block content
       tbody
         each item in types
             tr
-                td=item.type.info.typeName
-                td=numeral(item.type.price).format('$0,0.00')
-                td=item.count
+                td=item.item.name
+                td=numeral(item.price).format('$0,0.00')
+                td=item.item.quantity
                 td=numeral(item.total).format('$0,0.00')
       tfoot
         tr
