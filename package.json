@@ -34,7 +34,8 @@
     "errorhandler": "^1.0.0",
     "method-override": "^1.0.0",
     "morgan": "^1.0.0",
-    "body-parser": "^1.0.2"
+    "body-parser": "^1.0.2",
+    "eve2json": "0.0.6"
   },
   "devDependencies": {
     "gulp-livereload": "^1.3.1",

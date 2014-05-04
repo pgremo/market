@@ -1,5 +1,5 @@
 pricing = require '../data/pricing'
-parser = require '../lib/eve2json'
+parser = require 'eve2json'
 
 exports.index = (req, res) ->
   pricing.groupsByName()

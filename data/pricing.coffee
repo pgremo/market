@@ -6,9 +6,8 @@ url = require 'url'
 rest = require 'rest'
 types = require './types'
 regions = require './regions'
-schedule = require 'node-schedule'
-util = require 'util'
-require '../lib/array'
+cache = require '../lib/cache'
+_ = require 'lodash'
 
 parser = new xml2js.Parser
   explicitArray: false
@@ -22,44 +21,48 @@ parseString = (x) ->
       else
         reject err
 
-pricingDate = null
-groupsByName = null
-pricedTypesById = null
-pricedTypesByName = null
+regionID = regions.find((x) -> x.regionName == config.regionName).regionID
 
-load = ->
-  regionID = regions.find((x) -> x.regionName == config.regionName).regionID
-  pricedGroups = for key, xs of types.groupBy 'groupName'
-    do (key, xs) ->
-      priceUrl = url.parse config.pricingURL
-      priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
-      rest url.format priceUrl
-      .then (res) ->
-        parseString res.entity
-      .then (res) ->
-        category: xs[0].categoryName
-        name: xs[0].groupName
-        types: [xs, [res.evec_api.marketstat.type].flatten()].zip().map (x) -> {info: x[0], price: x[1].sell.avg * .85}
-  groupsByName = Promise.all pricedGroups
-  pricedTypesById = groupsByName
-    .then (x) ->
-      x
-      .map (y) -> y.types
-      .flatten()
-      .indexBy (y) -> y.info.typeID
-  pricedTypesByName = groupsByName
-    .then (x) ->
-      x
-      .map (y) -> y.types
-      .flatten()
-      .indexBy (y) -> y.info.typeName
-  pricingDate = new Date()
+expiry = ->
+  now = new Date()
+  new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1).getTime() - now.getTime()
 
-load()
+groupsByName = ->
+  cache.get 'groupsByName', expiry(), ->
+    pricedGroups = for key, xs of _.groupBy types, 'groupName'
+      do (key, xs) ->
+        priceUrl = url.parse config.pricingURL
+        priceUrl.search = querystring.stringify {typeid : y.typeID for y in xs, regionlimit : regionID}
+        rest url.format priceUrl
+        .then (res) ->
+          parseString res.entity
+        .then (res) ->
+          category: xs[0].categoryName
+          name: xs[0].groupName
+          types: _.zip(xs, _.flatten([res.evec_api.marketstat.type])).map (x) -> {info: x[0], price: x[1].sell.avg * .85}
+    Promise.all pricedGroups
 
-schedule.scheduleJob '00 00 * * *', load
+pricedTypesById = ->
+  cache.get 'pricedTypesById', expiry(), ->
+    groupsByName()
+      .then (x) ->
+        _.chain(x)
+        .map (y) -> y.types
+        .flatten()
+        .indexBy (y) -> y.info.typeID
+        .valueOf()
 
-module.exports.pricingDate = -> pricingDate
-module.exports.groupsByName = -> groupsByName
-module.exports.pricedTypesById = -> pricedTypesById
-module.exports.pricedTypesByName = -> pricedTypesByName
+pricedTypesByName = ->
+  cache.get 'pricedTypesByName', expiry(), ->
+    groupsByName()
+      .then (x) ->
+        _.chain(x)
+        .map (y) -> y.types
+        .flatten()
+        .indexBy (y) -> y.info.typeName
+        .valueOf()
+
+module.exports.pricingDate = -> new Date()
+module.exports.groupsByName = groupsByName
+module.exports.pricedTypesById = pricedTypesById
+module.exports.pricedTypesByName = pricedTypesByName
