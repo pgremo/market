@@ -4,16 +4,26 @@ block content
     table
       thead
         tr
-            th(colspan=4) Contract Detail
+            th(colspan=6) Contract Detail
+        tr
+            th Name
+            th Volume
+            th Price
+            th Count
+            th Total Volume
+            th Total Price
       tbody
-        each item in types
+        each type in types
             tr
-                td=item.item.name
-                td=numeral(item.price).format('$0,0.00')
-                td=item.item.quantity
-                td=numeral(item.total).format('$0,0.00')
+                td.text=type.name
+                td.number=numeral(type.item.volume).format('0,0.00')
+                td.number=numeral(type.price).format('$0,0.00')
+                td.number=type.quantity
+                td.number=numeral(type.totalVolume).format('0,0.00')
+                td.number=numeral(type.totalPrice).format('$0,0.00')
       tfoot
         tr
-            td(colspan=2) Total
-            td=count
-            td=numeral(total).format('$0,0.00')
+            td.text(colspan=3) Total
+            td.number=count
+            td.number=numeral(totalVolume).format('0,0.00')
+            td.number=numeral(totalPrice).format('$0,0.00')
